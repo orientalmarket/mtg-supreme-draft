@@ -10,12 +10,17 @@ function Pack(props) {
         flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'left',
-        overflow: 'scroll',
-        padding: '2rem',
+        overflow: 'auto',
       }}
     >
       {props.pack.map((card, index) => (
-        <Card name={card} key={index} />
+        <Card
+          name={card}
+          key={index}
+          onPick={props.onPick}
+          confirmPicks={props.confirmPicks}
+          doCallback={props.doCallback}
+        />
       ))}
     </div>
   );

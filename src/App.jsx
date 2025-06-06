@@ -2,12 +2,16 @@ import './App.css';
 import Pack from './components/Pack';
 import Pool from './components/Pool';
 import text from './assets/MTGOVintageCube.txt?raw';
+import Card from './components/Card';
 //import data from '/src/cube.json';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 function App() {
   const [cardPool, setCardPool] = useState([]);
   const [numPack, setNumPack] = useState(0);
+  const [pick, setPick] = useState([]);
+  const [playerPool, setPlayerPool] = useState([]);
+  const [confirmPicks, setConfirmPicks] = useState(false);
 
   const createCardPool = () => {
     var cardPool = [];
@@ -31,29 +35,78 @@ function App() {
   const handleStart = () => {
     setCardPool(shuffler(createCardPool()));
     setNumPack(0);
+    setPick([]);
+    setPlayerPool([]);
   };
 
   const handleNext = () => {
-    setNumPack(numPack + 1);
+    setPlayerPool((prev) => {
+      return [...prev, pick];
+    });
+    setConfirmPicks(true);
+    setPick([]);
+    setNumPack((numPack) => numPack + 1);
   };
+
+  const handleCallback = useCallback((cmd, val) => {
+    switch (cmd) {
+      case 'unselect':
+        setConfirmPicks(false);
+        break;
+      case 'pickCard':
+        setPlayerPool((prev) => {
+          return [...prev, pick];
+        });
+        break;
+    }
+  }, []);
 
   const currentPack = () => {
     return cardPool.slice(1 + numPack * 15, 16 + numPack * 15);
   };
 
   const handleBack = () => {
-    setNumPack(numPack - 1);
+    setNumPack((numPack) => numPack - 1);
   };
+
+  const handleCardPick = (data) => {
+    setPick((prev) => {
+      const isSelected = prev.includes(data);
+
+      if (isSelected) {
+        return prev.filter((i) => i !== data);
+      } else if (prev.length < 2) {
+        return [...prev, data];
+      }
+      return prev;
+    });
+  };
+
+  const isButtonDisabled = pick.length < 2;
 
   return (
     <>
       <div style={{ marginTop: '10px' }}>
         <button onClick={handleStart}>Restart</button>
-        <button onClick={handleNext}>Next Pack</button>
+        <button onClick={handleNext} disabled={isButtonDisabled}>
+          Confirm Picks
+        </button>
         <button onClick={handleBack}>Back</button>
       </div>
 
-      <Pack pack={currentPack()} />
+      <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+        {pick.map((card, index) => {
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} key={index}>
+              <p>{card}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <Pack pack={currentPack()} onPick={handleCardPick} confirmPicks={confirmPicks} doCallback={handleCallback} />
+
+      {playerPool.length > 0 ? <Pool pool={playerPool} /> : ''}
     </>
   );
 }
