@@ -15,7 +15,7 @@ function Pack(props) {
     >
       {props.pack.map((card, index) => (
         <Card
-          name={card}
+          card={card}
           key={index}
           onPick={props.onPick}
           confirmPicks={props.confirmPicks}

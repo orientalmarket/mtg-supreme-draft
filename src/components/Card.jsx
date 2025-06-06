@@ -1,23 +1,34 @@
-import data from '/src/cube.json';
 import { Buffer } from 'buffer/index.js';
 import { useState, useEffect } from 'react';
 
 function Card(props) {
   const [isSelected, setIsSelected] = useState(false);
-  const cardData = data[props.name];
 
   const getCardBorderRadius = () => {
-    if (cardData.set === 'lea') {
+    if (props.card.set === 'lea') {
       return '17px';
     }
     return '12px';
   };
 
-  const cardImageLink = '/img/' + Buffer.from(props.name.split(' // ')[0]).toString('base64') + '.png';
-
   const handleClick = () => {
-    props.onPick(props.name);
+    props.onPick(props.card);
     setIsSelected((isSelected) => !isSelected);
+  };
+
+  const getCardImage = () => {
+    var imageLink = null;
+    if (props.card !== undefined) {
+      if (props.card.image_uris !== undefined) {
+        imageLink = props.card.image_uris.normal;
+      } else if (props.card.card_faces !== undefined) {
+        if (props.card.card_faces.length > 0) {
+          imageLink = props.card.card_faces[0].image_uris.normal;
+        }
+      }
+    }
+
+    return imageLink;
   };
 
   useEffect(() => {
@@ -25,7 +36,7 @@ function Card(props) {
       setIsSelected(false);
       props.doCallback('pickCard');
     }
-    props.doCallback('unselect');
+    props.doCallback('unselect', '');
   }, [props.confirmPicks]);
 
   return (
@@ -38,7 +49,7 @@ function Card(props) {
       }}
     >
       <img
-        src={cardImageLink}
+        src={getCardImage()}
         style={{
           borderRadius: getCardBorderRadius(),
           maxWidth: '100%',

@@ -1,27 +1,17 @@
 import './App.css';
 import Pack from './components/Pack';
 import Pool from './components/Pool';
-import text from './assets/MTGOVintageCube.txt?raw';
+// import text from './assets/MTGOVintageCube.txt?raw';
 import Card from './components/Card';
-//import data from '/src/cube.json';
+import data from '/src/cube.json';
 import { useCallback, useState } from 'react';
 
 function App() {
-  const [cardPool, setCardPool] = useState([]);
+  const [cardPool, setCardPool] = useState(Object.values(data));
   const [numPack, setNumPack] = useState(0);
   const [pick, setPick] = useState([]);
   const [playerPool, setPlayerPool] = useState([]);
   const [confirmPicks, setConfirmPicks] = useState(false);
-
-  const createCardPool = () => {
-    var cardPool = [];
-    const fileLines = text.trim().split('\r\n');
-    fileLines.forEach((line) => {
-      cardPool = [...cardPool, line];
-    });
-
-    return cardPool;
-  };
 
   const shuffler = (arr) => {
     const shuffled = [...arr];
@@ -33,7 +23,7 @@ function App() {
   };
 
   const handleStart = () => {
-    setCardPool(shuffler(createCardPool()));
+    setCardPool(shuffler(cardPool));
     setNumPack(0);
     setPick([]);
     setPlayerPool([]);
@@ -55,7 +45,7 @@ function App() {
         break;
       case 'pickCard':
         setPlayerPool((prev) => {
-          return [...prev, pick];
+          return [...prev, pick].flat();
         });
         break;
     }
@@ -98,15 +88,15 @@ function App() {
         {pick.map((card, index) => {
           return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} key={index}>
-              <p>{card}</p>
+              <p>{card.name}</p>
             </div>
           );
         })}
       </div>
 
       <Pack pack={currentPack()} onPick={handleCardPick} confirmPicks={confirmPicks} doCallback={handleCallback} />
-
-      {playerPool.length > 0 ? <Pool pool={playerPool} /> : ''}
+      <h1>Pool</h1>
+      <Pool pool={playerPool} onPick={handleCardPick} confirmPicks={confirmPicks} doCallback={handleCallback} />
     </>
   );
 }
